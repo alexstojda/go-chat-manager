@@ -1,3 +1,5 @@
+import 'bootstrap/dist/css/bootstrap.css';
+
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Router, Switch, Route } from 'react-router-dom';
