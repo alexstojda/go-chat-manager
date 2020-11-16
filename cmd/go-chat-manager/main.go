@@ -1,7 +1,7 @@
 package main
 
 import (
-	"go-react-app/web"
+	"go-chat-manager/web"
 	"os"
 )
 

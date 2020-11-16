@@ -2,7 +2,7 @@ FROM node:14-alpine AS node-dev
 
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
-COPY package.json /usr/src/app
+COPY package.json package-lock.json /usr/src/app/
 RUN npm install
 COPY . /usr/src/app
 RUN npm run build
@@ -41,7 +41,7 @@ RUN make mod
 #    rm -rf $HOME/.ssh
 
 COPY --chown=golang:root . ./
-RUN go build -v -o go-react-app ./cmd/go-react-app/
+RUN go build -v -o go-chat-manager ./cmd/go-chat-manager/
 
 ENTRYPOINT ["make"]
 #CMD ["test"]
@@ -54,9 +54,9 @@ COPY --from=go-dev /etc/passwd /etc/group  /etc/
 #COPY --from=development /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 # Kube crashes if there isn't a tmp directory to write error logs to
 COPY --from=go-dev --chown=golang:root /tmp /tmp
-COPY --from=go-dev --chown=golang:root /app/go-react-app /app/
+COPY --from=go-dev --chown=golang:root /app/go-chat-manager /app/
 COPY --from=node-dev --chown=golang:root /usr/src/app/build /app/html
 
 USER golang:root
 EXPOSE 8080
-ENTRYPOINT ["/app/go-react-app"]
+ENTRYPOINT ["/app/go-chat-manager"]

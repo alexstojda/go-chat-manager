@@ -1,4 +1,4 @@
-module go-react-app
+module go-chat-manager
 
 go 1.15
 

@@ -6,9 +6,9 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/zsais/go-gin-prometheus"
-	"go-react-app/web/api/health"
-	"go-react-app/web/api/hello"
-	"go-react-app/web/spa"
+	"go-chat-manager/web/api/health"
+	"go-chat-manager/web/api/hello"
+	"go-chat-manager/web/spa"
 )
 
 type Server struct {

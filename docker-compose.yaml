@@ -1,23 +1,23 @@
 version: "3.4"
 
 services:
-  go-react-app-node-dev:
+  go-chat-manager-node-dev:
     build:
       context: .
       target: node-dev
-    image: alexstojda/go-react-app-development:${VERSION:-local}
+    image: alexstojda/go-chat-manager-development:${VERSION:-local}
 
-  go-react-app-go-dev:
+  go-chat-manager-go-dev:
     build:
       context: .
       target: go-dev
-    image: alexstojda/go-react-app-development:${VERSION:-local}
+    image: alexstojda/go-chat-manager-development:${VERSION:-local}
 
-  go-react-app:
+  go-chat-manager:
     build:
       context: .
       target: prod
-    image: alexstojda/go-react-app:${VERSION:-local}
+    image: alexstojda/go-chat-manager:${VERSION:-local}
     environment:
       - NAME=value
     ports:

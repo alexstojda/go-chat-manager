@@ -6,9 +6,9 @@ kubectl config use-context minikube
 
 eval $(minikube docker-env --shell=bash)
 
-docker-compose build go-react-app
-kubectl delete deployment go-react-app || true
+docker-compose build go-chat-manager
+kubectl delete deployment go-chat-manager || true
 kubectl apply -f .minikube
-kubectl rollout status deployment/go-react-app
-kubectl get deployment go-react-app
-echo "Deployed on $(minikube service go-react-app --url)"
+kubectl rollout status deployment/go-chat-manager
+kubectl get deployment go-chat-manager
+echo "Deployed on $(minikube service go-chat-manager --url)"

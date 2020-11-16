@@ -2,10 +2,10 @@ mod:
 	go mod download
 
 build:
-	go build -v -o go-react-app ./cmd/go-react-app/
+	go build -v -o go-chat-manager ./cmd/go-chat-manager/
 
 run:
-	go run cmd/go-react-app/main.go
+	go run cmd/go-chat-manager/main.go
 #
 #test:
 #	@go test ./...

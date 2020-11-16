@@ -44,8 +44,8 @@ spec:
         app: chat-manager
     spec:
       containers:
-        - name: go-react-app
-          image: alexstojda/go-react-app:latest
+        - name: go-chat-manager
+          image: alexstojda/go-chat-manager:latest
           imagePullPolicy: IfNotPresent
           env:
             - name: NAME
