@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import Container from "react-bootstrap/Container";
 import Card from "react-bootstrap/Card";
 import moment from "moment";
@@ -12,6 +12,7 @@ import Dropdown from "react-bootstrap/Dropdown";
 import styled from "styled-components";
 import axios from "axios";
 import timeFormat from "./utils/timeFormat";
+import useInterval from "@restart/hooks/useInterval";
 
 const StyledDateTimePicker = styled(DateTimePicker)`
     & > div {
@@ -31,8 +32,39 @@ const ChatCardBody = styled(Card.Body)`
 function App() {
 
     const [newSender, setSender] = useState("");
-    const [newMessage, setMessage] = useState("")
-    const [messages, setMessages] = useState([])
+    const [newMessage, setMessage] = useState("");
+    const [messages, setMessages] = useState([]);
+    const [refreshCounter, updateRefreshCounter] = useState(5);
+    const [isLoading, setIsLoading] = useState(true);
+
+    const bottomRef = useRef();
+
+    const scrollToBottom = () => {
+        bottomRef.current.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+        });
+    };
+
+    useEffect(() => {
+        fetchMessages();
+    })
+
+    useInterval(() => {
+        if (!isLoading) {
+
+            // Your custom logic here
+            if (refreshCounter > 0)
+                updateRefreshCounter(refreshCounter - 1);
+            else
+                updateRefreshCounter(5)
+            if (refreshCounter === 0) {
+                setIsLoading(true);
+                fetchMessages();
+                scrollToBottom();
+            }
+        }
+    }, 1000);
 
     function onNewMessageChange(e) {
         setMessage(e.target.value)
@@ -52,7 +84,6 @@ function App() {
             message: newMessage
         }).then((response) => {
             if (response.status === 201) {
-                fetchMessages()
                 setMessage("")
             }
         })
@@ -71,6 +102,7 @@ function App() {
                 console.error(response.statusText, response.data)
                 console.debug(response)
             }
+            setIsLoading(false);
         })
     }
 
@@ -91,8 +123,17 @@ function App() {
                     {messages && messages.length !== 0 && messages.map((message, key) => (
                         <p key={key}>[{message.sentAt.format()}] <span
                             style={{fontWeight: "bold"}}>{message.sender}</span> >_ {message.message} </p>))}
+                    <div ref={bottomRef} className="list-bottom"/>
                 </ChatCardBody>
                 <Card.Footer>
+                    <Row>
+                        <Col md="3">
+                            {!isLoading &&
+                            "Refreshing in "+refreshCounter
+                            }
+                            {isLoading && "Loading..."}
+                        </Col>
+                    </Row>
                     <Row>
                         <Col md="3">
                             <Form.Control value={newSender} onChange={onNewSenderChange}
