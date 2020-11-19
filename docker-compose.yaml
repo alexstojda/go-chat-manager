@@ -5,20 +5,18 @@ services:
     build:
       context: .
       target: node-dev
-    image: alexstojda/go-chat-manager-development:${VERSION:-local}
+    image: alexstojda/go-chat-manager-node-dev:${VERSION:-local}
 
   go-chat-manager-go-dev:
     build:
       context: .
       target: go-dev
-    image: alexstojda/go-chat-manager-development:${VERSION:-local}
+    image: alexstojda/go-chat-manager-go-dev:${VERSION:-local}
 
   go-chat-manager:
     build:
       context: .
       target: prod
     image: alexstojda/go-chat-manager:${VERSION:-local}
-    environment:
-      - NAME=value
     ports:
       - "8080"

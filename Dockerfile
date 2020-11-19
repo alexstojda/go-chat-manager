@@ -2,9 +2,9 @@ FROM node:14-alpine AS node-dev
 
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
-COPY package.json package-lock.json /usr/src/app/
+COPY package.json package-lock.json ./
 RUN npm install
-COPY . /usr/src/app
+COPY . ./
 RUN npm run build
 
 ENTRYPOINT ["npm"]
@@ -55,7 +55,7 @@ COPY --from=go-dev /etc/passwd /etc/group  /etc/
 # Kube crashes if there isn't a tmp directory to write error logs to
 COPY --from=go-dev --chown=golang:root /tmp /tmp
 COPY --from=go-dev --chown=golang:root /app/go-chat-manager /app/
-COPY --from=node-dev --chown=golang:root /usr/src/app/build /app/html
+COPY --from=node-dev --chown=golang:root /usr/src/app/build /app/
 
 USER golang:root
 EXPOSE 8080

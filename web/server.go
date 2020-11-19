@@ -1,27 +1,32 @@
 package web
 
 import (
+	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/logger"
+	"github.com/gin-gonic/contrib/static"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/zsais/go-gin-prometheus"
+	"go-chat-manager/internal/chat"
+	chatapi "go-chat-manager/web/api/chat"
 	"go-chat-manager/web/api/health"
 	"go-chat-manager/web/api/hello"
-	"go-chat-manager/web/spa"
 )
 
 type Server struct {
 	SPAPath string
 	Health  *health.Health
 	Hello   *hello.Hello
+	Chat    *chatapi.Chat
 }
 
-func NewServer(spaPath string) *Server {
+func NewServer(spaPath string, chatManager chat.ManagerService) *Server {
 	return &Server{
 		SPAPath: spaPath,
 		Health:  health.NewHealth(),
 		Hello:   hello.NewHello(),
+		Chat:    chatapi.NewChat(chatManager),
 	}
 }
 
@@ -62,14 +67,22 @@ func (s *Server) StartServer() {
 	}
 	prometheus.Use(router)
 
+	router.Use(cors.New(cors.Config{
+		AllowOrigins: []string{"*"},
+		AllowHeaders: []string{"Content-Type"},
+	}))
+
 	router.Use(errorHandler)
 
 	// SPA ROUTE
-	router.Use(spa.Middleware("/", s.SPAPath))
 
 	// API ROUTES
 	router.GET("/api/health", s.Health.Get)
 	router.GET("/api/hello", s.Hello.Get)
+	router.GET("/api/chat", s.Chat.GetAllMessages)
+	router.POST("/api/chat", s.Chat.PostMessage)
+
+	router.Use(static.Serve("/", static.LocalFile(s.SPAPath, true)))
 
 	err := router.Run()
 	if err != nil {
