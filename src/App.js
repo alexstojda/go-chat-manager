@@ -14,7 +14,6 @@ import axios from "axios";
 import timeFormat from "./utils/timeFormat";
 import useInterval from "@restart/hooks/useInterval";
 import ChatLogModal from "./chatLogModal";
-import {formatDate} from "react-datetime-picker/dist/shared/dateFormatter";
 
 const StyledDateTimePicker = styled(DateTimePicker)`
     & > div {
@@ -134,6 +133,24 @@ function App() {
         })
     }
 
+    function deleteMessages(startDate, endDate) {
+        setIsLoading(true);
+        axios.delete(apiUrl('/api/chat'), {
+            params: {
+                start: startDate ? moment(startDate).utc().format(timeFormat) : null,
+                end: endDate ? moment(endDate).utc().format(timeFormat) : null
+            }
+        }).then((response) => {
+            console.debug(response)
+            if (response.status === 204) {
+                fetchMessages();
+            } else {
+                console.error(response.statusText, response.data)
+                console.debug(response)
+            }
+        })
+    }
+
     function apiUrl(path) {
         if (process.env.REACT_APP_API_HOST !== undefined && process.env.REACT_APP_API_HOST !== "") {
             return process.env.REACT_APP_API_HOST + path
@@ -228,10 +245,16 @@ function App() {
                                 </Dropdown>
                             </Col>
                             <Col md="3">
-                                <Button className="w-100 btn-warning">Clear</Button>
+                                <Button className="w-100 btn-warning" onClick={() => {
+                                    if (window.confirm("Are you sure?"))
+                                        deleteMessages(startDate, endDate)
+                                }}>Clear</Button>
                             </Col>
                             <Col md="3">
-                                <Button className="w-100 btn-danger">Clear All</Button>
+                                <Button className="w-100 btn-danger" onClick={() => {
+                                    if (window.confirm("Are you sure?"))
+                                        deleteMessages()
+                                }}>Clear All</Button>
                             </Col>
                         </Row>
                     </Form>

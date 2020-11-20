@@ -70,6 +70,7 @@ func (s *Server) StartServer() {
 	router.Use(cors.New(cors.Config{
 		AllowOrigins: []string{"*"},
 		AllowHeaders: []string{"Content-Type"},
+		AllowMethods: []string{"POST", "DELETE"},
 	}))
 
 	router.Use(errorHandler)
@@ -81,6 +82,7 @@ func (s *Server) StartServer() {
 	router.GET("/api/hello", s.Hello.Get)
 	router.GET("/api/chat", s.Chat.GetMessages)
 	router.POST("/api/chat", s.Chat.PostMessage)
+	router.DELETE("/api/chat", s.Chat.DeleteMessages)
 
 	router.Use(static.Serve("/", static.LocalFile(s.SPAPath, true)))
 

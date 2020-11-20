@@ -60,26 +60,59 @@ func (ch *Chat) GetMessages(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
+func (ch *Chat) DeleteMessages(c *gin.Context) {
+	var start *time.Time = nil
+	var end *time.Time = nil
+
+	if val, ok := c.GetQuery("start"); ok {
+		t, err := time.Parse(time.RFC3339Nano, val)
+		if err != nil {
+			_ = c.Error(err)
+			return
+		} else {
+			start = &t
+		}
+	}
+
+	if val, ok := c.GetQuery("end"); ok {
+		t, err := time.Parse(time.RFC3339Nano, val)
+		if err != nil {
+			_ = c.Error(err)
+			return
+		} else {
+			end = &t
+		}
+	}
+
+	err := ch.chatManager.ClearMessages(start, end)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+
+	c.AbortWithStatus(http.StatusNoContent)
+}
+
 func (ch *Chat) PostMessage(c *gin.Context) {
 	message := &chat.Message{}
 
 	data, err := ioutil.ReadAll(c.Request.Body)
 	if err != nil {
-		c.Error(err)
+		_ = c.Error(err)
 		return
 	}
 
 	err = json.Unmarshal(data, message)
 	if err != nil {
-		c.Error(err)
+		_ = c.Error(err)
 		return
 	}
 
 	err = ch.chatManager.SaveMessage(*message)
 	if err != nil {
-		c.Error(err)
+		_ = c.Error(err)
 		return
 	}
 
-	c.JSON(201, message)
+	c.JSON(http.StatusCreated, message)
 }
