@@ -2,10 +2,12 @@ package chat
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"go-chat-manager/internal/chat"
 	"io/ioutil"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -20,14 +22,14 @@ func NewChat(chatManager chat.ManagerService) *Chat {
 }
 
 type Response struct {
-	Messages []chat.Message `json:"messages"`
+	Messages []chat.Message `json:"messages" xml:"Message"`
 }
 
 func (ch *Chat) GetMessages(c *gin.Context) {
 	var start *time.Time = nil
 	var end *time.Time = nil
 
-	if val, ok := c.GetQuery("start"); ok {
+	if val, ok := c.GetQuery("start"); ok && val != "" {
 		t, err := time.Parse(time.RFC3339Nano, val)
 		if err != nil {
 			_ = c.Error(err)
@@ -37,7 +39,7 @@ func (ch *Chat) GetMessages(c *gin.Context) {
 		}
 	}
 
-	if val, ok := c.GetQuery("end"); ok {
+	if val, ok := c.GetQuery("end"); ok && val != "" {
 		t, err := time.Parse(time.RFC3339Nano, val)
 		if err != nil {
 			_ = c.Error(err)
@@ -48,6 +50,7 @@ func (ch *Chat) GetMessages(c *gin.Context) {
 	}
 
 	messages, err := ch.chatManager.GetMessages(start, end)
+
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -57,7 +60,41 @@ func (ch *Chat) GetMessages(c *gin.Context) {
 		Messages: messages,
 	}
 
-	c.JSON(http.StatusOK, response)
+	accepts := strings.Split(c.Request.Header.Values("Accept")[0], ",")
+
+	if has(accepts, "application/json") || c.Query("format") == "application/json" {
+		if _, ok := c.GetQuery("download"); ok {
+			c.Header("Content-Disposition", "file=data.json")
+		}
+		c.JSON(http.StatusOK, response)
+	} else if has(accepts, "application/xml") || c.Query("format") == "application/xml" {
+		if _, ok := c.GetQuery("download"); ok {
+			c.Header("Content-Disposition", "file=data.xml")
+		}
+		c.XML(http.StatusOK, response)
+	} else {
+		if _, ok := c.GetQuery("download"); ok {
+			c.Header("Content-Disposition", "file=data.xml")
+		}
+		c.Data(http.StatusOK, "text/plain", []byte(plaintextResponse(messages)))
+	}
+}
+
+func plaintextResponse(messages []chat.Message) string {
+	response := ""
+	for _, m := range messages {
+		response = fmt.Sprintf("%s[%s] %s >_ %s\r\n", response, m.SentAt.UTC().Format(time.RFC3339Nano), m.Sender, m.Message)
+	}
+	return response
+}
+
+func has(slice []string, val string) bool {
+	for _, item := range slice {
+		if item == val {
+			return true
+		}
+	}
+	return false
 }
 
 func (ch *Chat) DeleteMessages(c *gin.Context) {

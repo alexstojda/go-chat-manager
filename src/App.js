@@ -116,10 +116,13 @@ function App() {
             params: {
                 start: startDate ? moment(startDate).utc().format(timeFormat) : null,
                 end: endDate ? moment(endDate).utc().format(timeFormat) : null
+            },
+            headers: {
+                "Accept": "application/json"
             }
         }).then((response) => {
             console.debug(response)
-            if (response.status === 200) {
+            if (response.status === 200 && response.data.messages) {
                 let messages = response.data.messages.map((message) => {
                     message.sentAt = moment(message.sentAt, timeFormat)
                     return message
@@ -133,12 +136,35 @@ function App() {
         })
     }
 
+    function openDownload(format) {
+        if (format) switch (format) {
+            case "xml":
+                format = "application/xml";
+                break;
+            case "json":
+                format = "application/json"
+                break;
+        }
+
+        const params = new URLSearchParams({
+            start: startDate ? moment(startDate).utc().format(timeFormat) : "",
+            end: endDate ? moment(endDate).utc().format(timeFormat) : "",
+            format: format ? format : "",
+            download: true
+        });
+
+        window.open(apiUrl("/api/chat?" + params.toString()), '_blank');
+    }
+
     function deleteMessages(startDate, endDate) {
         setIsLoading(true);
         axios.delete(apiUrl('/api/chat'), {
             params: {
                 start: startDate ? moment(startDate).utc().format(timeFormat) : null,
                 end: endDate ? moment(endDate).utc().format(timeFormat) : null
+            },
+            headers: {
+                "Accept": "application/json"
             }
         }).then((response) => {
             console.debug(response)
@@ -239,8 +265,15 @@ function App() {
                                     </Dropdown.Toggle>
 
                                     <Dropdown.Menu>
-                                        <Dropdown.Item>XML</Dropdown.Item>
-                                        <Dropdown.Item>Plaintext</Dropdown.Item>
+                                        <Dropdown.Item onClick={() => {
+                                            openDownload("xml")
+                                        }}>XML</Dropdown.Item>
+                                        <Dropdown.Item onClick={() => {
+                                            openDownload("json")
+                                        }}>JSON</Dropdown.Item>
+                                        <Dropdown.Item onClick={() => {
+                                            openDownload()
+                                        }}>Plaintext</Dropdown.Item>
                                     </Dropdown.Menu>
                                 </Dropdown>
                             </Col>
