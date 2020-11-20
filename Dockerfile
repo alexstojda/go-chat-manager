@@ -1,7 +1,7 @@
-FROM node:14-alpine AS node-dev
+FROM node:12-alpine AS node-dev
 
-RUN mkdir -p /usr/src/app
-WORKDIR /usr/src/app
+RUN mkdir -p /app/node
+WORKDIR /app/node
 COPY package.json package-lock.json ./
 RUN npm install
 COPY . ./
@@ -19,10 +19,10 @@ ENV CGO_ENABLED=0 \
 RUN apk add --no-cache git make
 
 ENV HOME=/home/golang
-WORKDIR /app
+WORKDIR /app/go
 RUN adduser -h $HOME -D -u 1000 -G root golang && \
-    chown golang:root /app && \
-    chmod g=u /app $HOME
+    chown golang:root /app/go && \
+    chmod g=u /app/go $HOME
 USER golang:root
 
 COPY --chown=golang:root go.mod go.sum Makefile ./
@@ -54,8 +54,8 @@ COPY --from=go-dev /etc/passwd /etc/group  /etc/
 #COPY --from=development /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 # Kube crashes if there isn't a tmp directory to write error logs to
 COPY --from=go-dev --chown=golang:root /tmp /tmp
-COPY --from=go-dev --chown=golang:root /app/go-chat-manager /app/
-COPY --from=node-dev --chown=golang:root /usr/src/app/build /app/
+COPY --from=go-dev --chown=golang:root /app/go/go-chat-manager /app/
+COPY --from=node-dev --chown=golang:root /app/node/build/ /app/build/
 
 USER golang:root
 EXPOSE 8080

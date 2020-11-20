@@ -3,7 +3,7 @@ package web
 import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/logger"
-	"github.com/gin-gonic/contrib/static"
+	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -84,6 +84,7 @@ func (s *Server) StartServer() {
 	router.POST("/api/chat", s.Chat.PostMessage)
 	router.DELETE("/api/chat", s.Chat.DeleteMessages)
 
+	log.Debug().Msg("Using " + s.SPAPath)
 	router.Use(static.Serve("/", static.LocalFile(s.SPAPath, true)))
 
 	err := router.Run()

@@ -14,9 +14,9 @@ services:
     image: alexstojda/go-chat-manager-go-dev:${VERSION:-local}
 
   go-chat-manager:
-    build:
-      context: .
-      target: prod
+    build: .
     image: alexstojda/go-chat-manager:${VERSION:-local}
+    environment:
+      - SPA_PATH=/app/build
     ports:
       - "8080"
