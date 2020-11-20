@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from "react";
+import React, {useRef, useState} from "react";
 import Container from "react-bootstrap/Container";
 import Card from "react-bootstrap/Card";
 import moment from "moment";
@@ -13,6 +13,8 @@ import styled from "styled-components";
 import axios from "axios";
 import timeFormat from "./utils/timeFormat";
 import useInterval from "@restart/hooks/useInterval";
+import ChatLogModal from "./chatLogModal";
+import {formatDate} from "react-datetime-picker/dist/shared/dateFormatter";
 
 const StyledDateTimePicker = styled(DateTimePicker)`
     & > div {
@@ -35,7 +37,13 @@ function App() {
     const [newMessage, setMessage] = useState("");
     const [messages, setMessages] = useState([]);
     const [refreshCounter, updateRefreshCounter] = useState(5);
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
+
+    const [showLogModal, setShowLogModal] = useState(false);
+    const [searchResults, setSearchResults] = useState([]);
+
+    const [startDate, setStartDate] = useState(moment().toDate());
+    const [endDate, setEndDate] = useState(moment().toDate());
 
     const bottomRef = useRef();
 
@@ -45,10 +53,6 @@ function App() {
             block: "start",
         });
     };
-
-    useEffect(() => {
-        fetchMessages();
-    })
 
     useInterval(() => {
         if (!isLoading) {
@@ -85,6 +89,8 @@ function App() {
         }).then((response) => {
             if (response.status === 201) {
                 setMessage("")
+                updateRefreshCounter(5)
+                fetchMessages();
             }
         })
     }
@@ -94,7 +100,7 @@ function App() {
             console.debug(response)
             if (response.status === 200) {
                 let messages = response.data.messages.map((message) => {
-                    message.sentAt = moment(message.sentAt, timeFormat).utc()
+                    message.sentAt = moment(message.sentAt, timeFormat)
                     return message
                 }).sort((a, b) => (a.sentAt - b.sentAt));
                 setMessages(messages);
@@ -103,6 +109,28 @@ function App() {
                 console.debug(response)
             }
             setIsLoading(false);
+        })
+    }
+
+    function searchMessages() {
+        axios.get(apiUrl('/api/chat'), {
+            params: {
+                start: startDate ? moment(startDate).utc().format(timeFormat) : null,
+                end: endDate ? moment(endDate).utc().format(timeFormat) : null
+            }
+        }).then((response) => {
+            console.debug(response)
+            if (response.status === 200) {
+                let messages = response.data.messages.map((message) => {
+                    message.sentAt = moment(message.sentAt, timeFormat)
+                    return message
+                }).sort((a, b) => (a.sentAt - b.sentAt));
+                setSearchResults(messages);
+                setShowLogModal(true);
+            } else {
+                console.error(response.statusText, response.data)
+                console.debug(response)
+            }
         })
     }
 
@@ -121,7 +149,7 @@ function App() {
             <ChatCard>
                 <ChatCardBody>
                     {messages && messages.length !== 0 && messages.map((message, key) => (
-                        <p key={key}>[{message.sentAt.format()}] <span
+                        <p key={key}>[{message.sentAt.format("DD/MM h:mm:ss A")}] <span
                             style={{fontWeight: "bold"}}>{message.sender}</span> >_ {message.message} </p>))}
                     <div ref={bottomRef} className="list-bottom"/>
                 </ChatCardBody>
@@ -129,7 +157,7 @@ function App() {
                     <Row>
                         <Col md="3">
                             {!isLoading &&
-                            "Refreshing in "+refreshCounter
+                            "Refreshing in " + refreshCounter
                             }
                             {isLoading && "Loading..."}
                         </Col>
@@ -155,55 +183,39 @@ function App() {
                 </Card.Header>
                 <Card.Body>
                     <Form>
-                        <h5>Clear Chat</h5>
+                        <h5>Select dates (optional)</h5>
                         <Row>
-                            <Col md="4">
+                            <Col md="6">
                                 <InputGroup className="mb-3">
                                     <InputGroup.Prepend>
                                         <InputGroup.Text>Start</InputGroup.Text>
                                     </InputGroup.Prepend>
-                                    <StyledDateTimePicker className="form-control"/>
+                                    <StyledDateTimePicker className="form-control"
+                                                          value={startDate}
+                                                          onChange={setStartDate}
+                                                          disableClock
+                                    />
                                 </InputGroup>
                             </Col>
-                            <Col md="4">
+                            <Col md="6">
                                 <InputGroup className="mb-3">
                                     <InputGroup.Prepend>
                                         <InputGroup.Text>End</InputGroup.Text>
                                     </InputGroup.Prepend>
-                                    <StyledDateTimePicker className="form-control"/>
+                                    <StyledDateTimePicker className="form-control" value={endDate}
+                                                          onChange={setEndDate}/>
                                 </InputGroup>
-                            </Col>
-                            <Col md="2">
-                                <Button className="w-100">Clear</Button>
-                            </Col>
-                            <Col md="2">
-                                <Button className="w-100">Clear All</Button>
                             </Col>
                         </Row>
                     </Form>
                     <Form>
-                        <h5>Search Chat</h5>
                         <Row>
-                            <Col md="4">
-                                <InputGroup className="mb-3">
-                                    <InputGroup.Prepend>
-                                        <InputGroup.Text>Start</InputGroup.Text>
-                                    </InputGroup.Prepend>
-                                    <StyledDateTimePicker className="form-control"/>
-                                </InputGroup>
+                            <Col md="3">
+                                <Button className="w-100" onClick={() => {
+                                    searchMessages()
+                                }}>Search</Button>
                             </Col>
-                            <Col md="4">
-                                <InputGroup className="mb-3">
-                                    <InputGroup.Prepend>
-                                        <InputGroup.Text>End</InputGroup.Text>
-                                    </InputGroup.Prepend>
-                                    <StyledDateTimePicker className="form-control"/>
-                                </InputGroup>
-                            </Col>
-                            <Col md="2">
-                                <Button className="w-100">Search</Button>
-                            </Col>
-                            <Col md="2">
+                            <Col md="3">
                                 <Dropdown>
                                     <Dropdown.Toggle id="dropdown-basic" className="w-100">
                                         Download
@@ -215,10 +227,19 @@ function App() {
                                     </Dropdown.Menu>
                                 </Dropdown>
                             </Col>
+                            <Col md="3">
+                                <Button className="w-100 btn-warning">Clear</Button>
+                            </Col>
+                            <Col md="3">
+                                <Button className="w-100 btn-danger">Clear All</Button>
+                            </Col>
                         </Row>
                     </Form>
                 </Card.Body>
             </Card>
+            <ChatLogModal messages={searchResults} state={showLogModal} onClose={() => {
+                setShowLogModal(false)
+            }}/>
         </Container>
     );
 }

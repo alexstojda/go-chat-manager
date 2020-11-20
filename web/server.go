@@ -79,7 +79,7 @@ func (s *Server) StartServer() {
 	// API ROUTES
 	router.GET("/api/health", s.Health.Get)
 	router.GET("/api/hello", s.Hello.Get)
-	router.GET("/api/chat", s.Chat.GetAllMessages)
+	router.GET("/api/chat", s.Chat.GetMessages)
 	router.POST("/api/chat", s.Chat.PostMessage)
 
 	router.Use(static.Serve("/", static.LocalFile(s.SPAPath, true)))

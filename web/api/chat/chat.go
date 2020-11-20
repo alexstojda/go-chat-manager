@@ -6,6 +6,7 @@ import (
 	"go-chat-manager/internal/chat"
 	"io/ioutil"
 	"net/http"
+	"time"
 )
 
 type Chat struct {
@@ -22,10 +23,33 @@ type Response struct {
 	Messages []chat.Message `json:"messages"`
 }
 
-func (ch *Chat) GetAllMessages(c *gin.Context) {
-	messages, err := ch.chatManager.GetMessages(nil, nil)
+func (ch *Chat) GetMessages(c *gin.Context) {
+	var start *time.Time = nil
+	var end *time.Time = nil
+
+	if val, ok := c.GetQuery("start"); ok {
+		t, err := time.Parse(time.RFC3339Nano, val)
+		if err != nil {
+			_ = c.Error(err)
+			return
+		} else {
+			start = &t
+		}
+	}
+
+	if val, ok := c.GetQuery("end"); ok {
+		t, err := time.Parse(time.RFC3339Nano, val)
+		if err != nil {
+			_ = c.Error(err)
+			return
+		} else {
+			end = &t
+		}
+	}
+
+	messages, err := ch.chatManager.GetMessages(start, end)
 	if err != nil {
-		c.Error(err)
+		_ = c.Error(err)
 		return
 	}
 
