@@ -30,7 +30,7 @@ func (ch *Chat) GetMessages(c *gin.Context) {
 	var end *time.Time = nil
 
 	if val, ok := c.GetQuery("start"); ok && val != "" {
-		t, err := time.Parse(time.RFC3339Nano, val)
+		t, err := time.Parse(time.RFC3339, val)
 		if err != nil {
 			_ = c.Error(err)
 			return
@@ -40,7 +40,7 @@ func (ch *Chat) GetMessages(c *gin.Context) {
 	}
 
 	if val, ok := c.GetQuery("end"); ok && val != "" {
-		t, err := time.Parse(time.RFC3339Nano, val)
+		t, err := time.Parse(time.RFC3339, val)
 		if err != nil {
 			_ = c.Error(err)
 			return
@@ -64,37 +64,20 @@ func (ch *Chat) GetMessages(c *gin.Context) {
 
 	if has(accepts, "application/json") || c.Query("format") == "application/json" {
 		if _, ok := c.GetQuery("download"); ok {
-			c.Header("Content-Disposition", "file=data.json")
+			c.Header("Content-Disposition", "attachment; filename=messages.json")
 		}
 		c.JSON(http.StatusOK, response)
 	} else if has(accepts, "application/xml") || c.Query("format") == "application/xml" {
 		if _, ok := c.GetQuery("download"); ok {
-			c.Header("Content-Disposition", "file=data.xml")
+			c.Header("Content-Disposition", "attachment; filename=messages.xml")
 		}
 		c.XML(http.StatusOK, response)
 	} else {
 		if _, ok := c.GetQuery("download"); ok {
-			c.Header("Content-Disposition", "file=data.xml")
+			c.Header("Content-Disposition", "attachment; filename=messages.txt")
 		}
 		c.Data(http.StatusOK, "text/plain", []byte(plaintextResponse(messages)))
 	}
-}
-
-func plaintextResponse(messages []chat.Message) string {
-	response := ""
-	for _, m := range messages {
-		response = fmt.Sprintf("%s[%s] %s >_ %s\r\n", response, m.SentAt.UTC().Format(time.RFC3339Nano), m.Sender, m.Message)
-	}
-	return response
-}
-
-func has(slice []string, val string) bool {
-	for _, item := range slice {
-		if item == val {
-			return true
-		}
-	}
-	return false
 }
 
 func (ch *Chat) DeleteMessages(c *gin.Context) {
@@ -152,4 +135,21 @@ func (ch *Chat) PostMessage(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, message)
+}
+
+func plaintextResponse(messages []chat.Message) string {
+	response := ""
+	for _, m := range messages {
+		response = fmt.Sprintf("%s[%s] %s >_ %s\r\n", response, m.SentAt.UTC().Format(time.RFC3339Nano), m.Sender, m.Message)
+	}
+	return response
+}
+
+func has(slice []string, val string) bool {
+	for _, item := range slice {
+		if item == val {
+			return true
+		}
+	}
+	return false
 }

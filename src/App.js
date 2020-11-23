@@ -99,7 +99,7 @@ function App() {
             console.debug(response)
             if (response.status === 200) {
                 let messages = response.data.messages.map((message) => {
-                    message.sentAt = moment(message.sentAt, timeFormat)
+                    message.sentAt = moment.utc(message.sentAt, timeFormat).local()
                     return message
                 }).sort((a, b) => (a.sentAt - b.sentAt));
                 setMessages(messages);
@@ -124,7 +124,7 @@ function App() {
             console.debug(response)
             if (response.status === 200 && response.data.messages) {
                 let messages = response.data.messages.map((message) => {
-                    message.sentAt = moment(message.sentAt, timeFormat)
+                    message.sentAt = moment.utc(message.sentAt, timeFormat).local()
                     return message
                 }).sort((a, b) => (a.sentAt - b.sentAt));
                 setSearchResults(messages);

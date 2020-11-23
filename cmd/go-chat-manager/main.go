@@ -10,7 +10,7 @@ func main() {
 
 	spaPath := os.Getenv("SPA_PATH")
 	if spaPath == "" {
-		spaPath = "./build"
+		spaPath = "/app/build"
 	}
 
 	chatManager := chat.NewManager()

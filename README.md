@@ -5,7 +5,7 @@ This project is bootstrapped with [Create React App](https://github.com/facebook
 
 ## Running the app
 
-To start the app run `docker-compose run -p "8080:8080" go-chat-manager`
+To start the app run `docker-compose up --build go-chat-manager`
 
 ## Development
 
