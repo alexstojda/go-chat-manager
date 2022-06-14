@@ -9,7 +9,7 @@ RUN npm run build
 
 ENTRYPOINT ["npm"]
 
-FROM golang:1.15-alpine AS go-dev
+FROM golang:1.18-alpine AS go-dev
 
 ENV CGO_ENABLED=0 \
     GOOS=linux \

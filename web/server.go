@@ -34,11 +34,7 @@ func (s *Server) StartServer() {
 		zerolog.SetGlobalLevel(zerolog.DebugLevel)
 	}
 
-	router.Use(logger.SetLogger(logger.Config{
-		SkipPath: []string{
-			"/health",
-		},
-	}))
+	router.Use(logger.SetLogger(logger.WithSkipPath([]string{"/api/health"})))
 
 	router.Use(cors.New(cors.Config{
 		AllowOrigins: []string{"*"},
