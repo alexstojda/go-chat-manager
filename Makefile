@@ -4,9 +4,12 @@ mod:
 build:
 	go build -v -o go-chat-manager ./cmd/go-chat-manager/
 
-run:
+run-backend:
 	go run cmd/go-chat-manager/main.go
-#
+
+run-frontend:
+	REACT_APP_API_HOST=http://localhost:8080 npm run start
+
 #test:
 #	@go test ./...
 #

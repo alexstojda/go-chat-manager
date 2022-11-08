@@ -1,5 +1,6 @@
 # Go React App
-A React Frontend/Golang backend microservice template. 
+
+A React Frontend/Golang backend microservice template.
 
 This project is bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
@@ -15,10 +16,13 @@ To start the app run `docker-compose up --build go-chat-manager`
 
 Install golang dependencies
 
-#### `make run`
+#### `make run-backend`
 
 Runs the webserver
 
+#### `make run-frontend`
+
+Runs the frontend dev server configured to connect to the webserver running locally.
 
 ### Create React App
 
