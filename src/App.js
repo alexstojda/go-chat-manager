@@ -254,9 +254,7 @@ function App() {
             <Row>
               <Col md="6">
                 <InputGroup className="mb-3">
-                  <InputGroup.Prepend>
-                    <InputGroup.Text>Start</InputGroup.Text>
-                  </InputGroup.Prepend>
+                  <InputGroup.Text>Start</InputGroup.Text>
                   <StyledDateTimePicker
                     className="form-control"
                     value={startDate}
@@ -267,9 +265,7 @@ function App() {
               </Col>
               <Col md="6">
                 <InputGroup className="mb-3">
-                  <InputGroup.Prepend>
-                    <InputGroup.Text>End</InputGroup.Text>
-                  </InputGroup.Prepend>
+                  <InputGroup.Text>End</InputGroup.Text>
                   <StyledDateTimePicker
                     className="form-control"
                     value={endDate}
